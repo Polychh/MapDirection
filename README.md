@@ -3,6 +3,13 @@
 The app calculates the route between two points on the map. Show distance and travel time for every route. The MapApp is buld using: UIKit, MapKit and CoreLocation.
 
 ---
+
+<div align="left">
+  <img src="" width="350" height="200"/>
+</div>
+
+---
+
 ### Functionality MapDirection:
 - Calculate direction between two adresses on a map.
 - The ability to build a route from the current position of the user.
