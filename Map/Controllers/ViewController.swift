@@ -168,7 +168,7 @@ class ViewController: UIViewController {
                 
                 switch result{
                 case .success(var aleternativeRoutes):
-                    self.drawRoutes(arrayRoutes: aleternativeRoutes, colorMinRoute: Constant.orangeColor, colorRoutes: Constant.redColor)
+                    self.drawRoutes(arrayRoutes: aleternativeRoutes, colorMinRoute: Constant.grayColor, colorRoutes: Constant.redColor)
                     aleternativeRoutes = []
                     self.walkingArray = self.shakeOverlay(array: self.mapView.overlays)
                 case .failure(let error):
@@ -363,7 +363,7 @@ extension ViewController {
         mapView.addSubview(resetButton)
         NSLayoutConstraint.activate([
             resetButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -20),
-            resetButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -100),
+            resetButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -110),
             resetButton.widthAnchor.constraint(equalToConstant: 60),
             resetButton.heightAnchor.constraint(equalToConstant: 60)
         ])
@@ -384,7 +384,7 @@ extension ViewController {
     }
     
     func configureStackView() {
-        stackViewH.backgroundColor = .brown
+        stackViewH.backgroundColor = .clear
         stackViewH.spacing = 10
     }
     

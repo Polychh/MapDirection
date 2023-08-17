@@ -25,7 +25,7 @@ class MapScrollView: UIScrollView {
     }
     
     func configure(){
-        backgroundColor = .red
+        backgroundColor = .lightGray
         alwaysBounceHorizontal = true
         showsHorizontalScrollIndicator = true
         translatesAutoresizingMaskIntoConstraints = false
