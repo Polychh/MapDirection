@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "gps+green+location+map+marker+navigation+icon-1320196713756035798.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
