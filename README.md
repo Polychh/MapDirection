@@ -5,7 +5,7 @@ The app calculates the route between two points on the map. Show distance and tr
 ---
 
 <div align="left">
-  <img src="" width="350" height="200"/>
+  <img src="https://github.com/Polychh/MapDirection/blob/master/MapDirection.gif" width="350" height="600"/>
 </div>
 
 ---
