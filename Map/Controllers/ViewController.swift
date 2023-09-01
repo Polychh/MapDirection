@@ -11,27 +11,11 @@ import CoreLocation
 
 class ViewController: UIViewController {
     
-    let mapView: MKMapView = {
-        let mapView = MKMapView()
-        mapView.translatesAutoresizingMaskIntoConstraints = false
-        return mapView
-    }()
-    
-    let scrollView = MapScrollView(hidden: true)
-    let stackViewH = UIStackView(axis: .horizontal, distribution: .fillEqually)
-    var buttonScrollView = UIButton()
-    var label = UILabel()
+    var mainMapView = MainMapView()
     
     let locationManager = CLLocationManager()
     var userLat: CLLocationDegrees?
     var userLon: CLLocationDegrees?
-    
-    let addAddressButton = MapButtons(nameImage: "addAddress", hidden: false)
-    let resetButton = MapButtons(nameImage: "reset", hidden: true)
-    let goButton = MapButtons(nameImage: "go", hidden: true)
-    let locationButton = MapButtons(nameImage: "location", hidden: false)
-    
-    var segmentedControl: UISegmentedControl!
     
     var placemark: PlacemarkProtocol
     var direction: DirectionProtocol
@@ -52,6 +36,10 @@ class ViewController: UIViewController {
     var automobileArray = [MKOverlay]()
     var walkingArray = [MKOverlay]()
     
+    override func loadView() {
+        view = mainMapView
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -59,22 +47,20 @@ class ViewController: UIViewController {
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestLocation() // срабатывает метод из расширения CLLocationManagerDelegate
         
-        mapView.delegate = self
+        mainMapView.mapView.delegate = self
         
         addTarget()
-        createSegmentController()
-        setConstraints()
-        setupLayoutScrollView()
-        
+
         tappedPolyline()
     }
 
 //MARK: - Buttons with targets
     func addTarget(){
-        addAddressButton.addTarget(self, action: #selector(addAddressButtonTapped), for: .touchUpInside)
-        goButton.addTarget(self, action: #selector(goButtonTapped), for: .touchUpInside)
-        resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
-        locationButton.addTarget(self, action: #selector(locationButtonTapped), for: .touchUpInside)
+        mainMapView.addAddressButton.addTarget(self, action: #selector(addAddressButtonTapped), for: .touchUpInside)
+        mainMapView.goButton.addTarget(self, action: #selector(goButtonTapped), for: .touchUpInside)
+        mainMapView.resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
+        mainMapView.locationButton.addTarget(self, action: #selector(locationButtonTapped), for: .touchUpInside)
+        mainMapView.segmentedControl.addTarget(self, action: #selector(segmentControl(_:)), for: .valueChanged)
     }
     
     @objc func addAddressButtonTapped(){
@@ -90,18 +76,18 @@ class ViewController: UIViewController {
                 }
                 
                 if annotationArray.count > 1 {
-                    goButton.isHidden = false
-                    resetButton.isHidden = false
+                    mainMapView.goButton.isHidden = false
+                    mainMapView.resetButton.isHidden = false
                 }
                 // show annotation on the map
-                mapView.showAnnotations(annotationArray, animated: true)
+                mainMapView.mapView.showAnnotations(annotationArray, animated: true)
             }
         }
     }
     
     @objc func goButtonTapped(){
         
-        mapView.removeOverlays(mapView.overlays) // удаляем маршруты от маршрута на машине
+        mainMapView.mapView.removeOverlays(mainMapView.mapView.overlays) // удаляем маршруты от маршрута на машине
         
         for index in 0...annotationArray.count - 2 {
             direction.createDirectionRequest(transportType: .automobile, startCoordinate: annotationArray[index].coordinate,
@@ -113,7 +99,7 @@ class ViewController: UIViewController {
                 case .success(var aleternativeRoutes):
                     self.drawRoutes(arrayRoutes: aleternativeRoutes, colorMinRoute: Constant.greenColor, colorRoutes: Constant.grayColor)
                     aleternativeRoutes = [] //чтобы в момент переключения видов маршрута в сегмент контроллере удалялись из массива маршруты с предыдущего выбранного типа маршрута
-                    self.automobileArray = self.shakeOverlay(array: self.mapView.overlays)
+                    self.automobileArray = self.shakeOverlay(array: self.mainMapView.mapView.overlays)
                 case .failure(let error):
                     print(error)
                     self.alertError(title: "Error", message: "Can not calculate direction")
@@ -129,36 +115,28 @@ class ViewController: UIViewController {
         placemark.userCurentLocationCoordinate(lat: lat, lon: lon) { annotation in
             self.annotationArray.append(annotation)
         }
-        mapView.showAnnotations(annotationArray, animated: true)
+        mainMapView.mapView.showAnnotations(annotationArray, animated: true)
     }
     
     @objc func resetButtonTapped(){
-        mapView.removeOverlays(mapView.overlays) // удаляем все маршруты
-        mapView.removeAnnotations(mapView.annotations) // удаляем все аннотации
+        mainMapView.mapView.removeOverlays(mainMapView.mapView.overlays) // удаляем все маршруты
+        mainMapView.mapView.removeAnnotations(mainMapView.mapView.annotations) // удаляем все аннотации
         annotationArray = [MKPointAnnotation]()
         buttonsArray = []
         automobileArray = []
         walkingArray = []
-        segmentedControl.selectedSegmentIndex = 0 
-        stackViewH.removeFullyAllArrangedSubviews()
-        goButton.isHidden = true
-        resetButton.isHidden = true
-        scrollView.isHidden = true
-        segmentedControl.isHidden = true
+        mainMapView.segmentedControl.selectedSegmentIndex = 0
+        mainMapView.stackViewH.removeFullyAllArrangedSubviews()
+        mainMapView.goButton.isHidden = true
+        mainMapView.resetButton.isHidden = true
+        mainMapView.scrollView.isHidden = true
+        mainMapView.segmentedControl.isHidden = true
     }
     
     //MARK: - SegmentController
-    func createSegmentController(){
-        let items = ["By Car","By Foot"]
-        segmentedControl = UISegmentedControl(items: items)
-        segmentedControl.selectedSegmentIndex = 0
-        segmentedControl.addTarget(self, action: #selector(segmentControl(_:)), for: .valueChanged)
-        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        segmentedControl.isHidden = true
-    }
     
     @objc func carButtonSegmentWalking(){
-        mapView.removeOverlays(mapView.overlays)
+        mainMapView.mapView.removeOverlays(mainMapView.mapView.overlays)
 
         for index in 0...annotationArray.count - 2 {
             direction.createDirectionRequest(transportType: .walking, startCoordinate: annotationArray[index].coordinate,
@@ -168,9 +146,9 @@ class ViewController: UIViewController {
                 
                 switch result{
                 case .success(var aleternativeRoutes):
-                    self.drawRoutes(arrayRoutes: aleternativeRoutes, colorMinRoute: Constant.grayColor, colorRoutes: Constant.redColor)
+                    self.drawRoutes(arrayRoutes: aleternativeRoutes, colorMinRoute: Constant.greenColor, colorRoutes: Constant.grayColor)
                     aleternativeRoutes = []
-                    self.walkingArray = self.shakeOverlay(array: self.mapView.overlays)
+                    self.walkingArray = self.shakeOverlay(array: self.mainMapView.mapView.overlays)
                 case .failure(let error):
                     print(error)
                     self.alertError(title: "Error", message: "Can not calculate direction")
@@ -182,10 +160,10 @@ class ViewController: UIViewController {
     @objc func segmentControl(_ segmentedControl: UISegmentedControl) {
         switch (segmentedControl.selectedSegmentIndex) {
         case 0:
-            stackViewH.removeFullyAllArrangedSubviews()
+            mainMapView.stackViewH.removeFullyAllArrangedSubviews()
             goButtonTapped()
         case 1:
-            stackViewH.removeFullyAllArrangedSubviews()
+            mainMapView.stackViewH.removeFullyAllArrangedSubviews()
             carButtonSegmentWalking()
         default:
             print("default")
@@ -199,33 +177,33 @@ class ViewController: UIViewController {
             for route in arrayRoutes{
                 // рисуем для всех маршрутов включая первый
                 print("route resulte: \(route.polyline)")
-                label = MapLabels(textAlignment: .center, fontSize: 18, hidden: false)
-                buttonScrollView = ButtonForScrollView( backgroundColor: .white )
-                label.text = self.converTimeDistance(route: route)
-                buttonScrollView.addSubview(label)
+                mainMapView.label = MapLabels(textAlignment: .center, fontSize: 18, hidden: false)
+                mainMapView.buttonScrollView = ButtonForScrollView( backgroundColor: .white )
+                mainMapView.label.text = self.converTimeDistance(route: route)
+                mainMapView.buttonScrollView.addSubview(mainMapView.label)
                 
                 NSLayoutConstraint.activate([
-                    self.label.centerXAnchor.constraint(equalTo: self.buttonScrollView.centerXAnchor),
-                    self.label.leadingAnchor.constraint(equalTo: self.buttonScrollView.leadingAnchor, constant: 5),
-                    self.label.topAnchor.constraint(equalTo: self.buttonScrollView.topAnchor, constant: 5),
+                    self.mainMapView.label.centerXAnchor.constraint(equalTo: self.mainMapView.buttonScrollView.centerXAnchor),
+                    self.mainMapView.label.leadingAnchor.constraint(equalTo: self.mainMapView.buttonScrollView.leadingAnchor, constant: 5),
+                    self.mainMapView.label.topAnchor.constraint(equalTo: self.mainMapView.buttonScrollView.topAnchor, constant: 5),
                 ])
-                stackViewH.addArrangedSubview(self.buttonScrollView)
-                buttonScrollView.addTarget(self, action: #selector(scrollViewButtonTapped), for: .touchUpInside)
-                buttonsArray.append(buttonScrollView)
+                mainMapView.stackViewH.addArrangedSubview(self.mainMapView.buttonScrollView)
+                mainMapView.buttonScrollView.addTarget(self, action: #selector(scrollViewButtonTapped), for: .touchUpInside)
+                buttonsArray.append(mainMapView.buttonScrollView)
                 
                 Variables.lineColor = colorRoutes
-                mapView.addOverlay(route.polyline)
+                mainMapView.mapView.addOverlay(route.polyline)
             }
         } else{
             self.alertError(title: "Error", message: "route less than 1")
         }
-        redrawOverlay(overlay: arrayRoutes[0].polyline, color: colorMinRoute, mapView: mapView)// для первого маршрута самого короткого меняем цвет
-        presentMapAleretOnMainThread(scrollView: self.scrollView,  segmentedControl: self.segmentedControl)
+        redrawOverlay(overlay: arrayRoutes[0].polyline, color: colorMinRoute, mapView: mainMapView.mapView)// для первого маршрута самого короткого меняем цвет
+        presentMapAleretOnMainThread(scrollView: self.mainMapView.scrollView,  segmentedControl: self.mainMapView.segmentedControl)
     }
     
     //MARK: - TappedButtonScrollView
     @objc func scrollViewButtonTapped(sender: UIButton){
-       var shakeArray = (segmentedControl.selectedSegmentIndex == 0) ? automobileArray : walkingArray // выбираем правильный массив для типа маршрута
+        var shakeArray = (mainMapView.segmentedControl.selectedSegmentIndex == 0) ? automobileArray : walkingArray // выбираем правильный массив для типа маршрута
         
         for (index,element) in buttonsArray.enumerated(){
             element.tag = index
@@ -238,11 +216,11 @@ class ViewController: UIViewController {
                     shakeArray.remove(at: index)
                     
                     for overlay in shakeArray{
-                        redrawOverlay(overlay: overlay, color: Constant.grayColor, mapView: mapView)
+                        redrawOverlay(overlay: overlay, color: Constant.grayColor, mapView: mainMapView.mapView)
                     }
                     
                     shakeArray.insert(selectedRoute, at: index)
-                    redrawOverlay(overlay: selectedRoute, color: Constant.redColor, mapView: mapView)
+                    redrawOverlay(overlay: selectedRoute, color: Constant.blueColor, mapView: mainMapView.mapView)
                     
                     break // чтобы после первого совпаденя индекса с сендер тэг не шла проверка следующих
                 }
@@ -253,18 +231,18 @@ class ViewController: UIViewController {
     //MARK: - TappedPolyline
     func tappedPolyline(){
         let mapTap = UITapGestureRecognizer(target: self, action: #selector(choosePoliline(_:)))
-        mapView.addGestureRecognizer(mapTap)
+        mainMapView.mapView.addGestureRecognizer(mapTap)
     }
     
     @objc func choosePoliline(_ tap: UITapGestureRecognizer) {
         if tap.state == .recognized{
             // Get map coordinate from touch point
-            let touchPt = tap.location(in: mapView)
-            let coord = mapView.convert(touchPt, toCoordinateFrom: mapView)
+            let touchPt = tap.location(in: mainMapView.mapView)
+            let coord = mainMapView.mapView.convert(touchPt, toCoordinateFrom: mainMapView.mapView)
             let mappoint = MKMapPoint(coord)
             
             // for every overlay ...
-            var overlayArray = mapView.overlays
+            var overlayArray = mainMapView.mapView.overlays
             overlayArray.reverse()
 
             for  overlay in overlayArray {
@@ -278,10 +256,10 @@ class ViewController: UIViewController {
                             overlayArray.remove(at: index)
                         }
                                             
-                        redrawOverlay(overlay: overlay, color: Constant.redColor,mapView: mapView)
+                        redrawOverlay(overlay: overlay, color: Constant.redColor,mapView: mainMapView.mapView)
                         
                         for overlay in overlayArray{
-                            redrawOverlay(overlay: overlay, color: Constant.grayColor,mapView: mapView)
+                            redrawOverlay(overlay: overlay, color: Constant.grayColor,mapView: mainMapView.mapView)
                         }
                         overlayArray.reverse()
                         overlayArray.insert(selectedRoute, at: 0)
@@ -319,89 +297,10 @@ extension ViewController: CLLocationManagerDelegate{
             locationManager.stopUpdatingLocation()
             userLat = location.coordinate.latitude
             userLon = location.coordinate.longitude
-            mapView.centerLocation(location)
+            mainMapView.mapView.centerLocation(location)
         }
     }
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
-    }
-}
-//MARK: - Extension: Constrains
-extension ViewController {
-    
-    func setConstraints(){
-        view.addSubview(mapView)
-        NSLayoutConstraint.activate([
-            mapView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
-            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0), //right
-            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0), //left
-            mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0)
-        ])
-        
-        mapView.addSubview(addAddressButton)
-        NSLayoutConstraint.activate([
-            addAddressButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -20),
-            addAddressButton.widthAnchor.constraint(equalToConstant: 60),
-            addAddressButton.heightAnchor.constraint(equalToConstant: 60)
-        ])
-        
-        mapView.addSubview(locationButton)
-        NSLayoutConstraint.activate([
-            locationButton.leadingAnchor.constraint(equalTo: mapView.leadingAnchor, constant: 20),
-            locationButton.widthAnchor.constraint(equalToConstant: 60),
-            locationButton.heightAnchor.constraint(equalToConstant: 60)
-        ])
-        
-        mapView.addSubview(goButton)
-        NSLayoutConstraint.activate([
-            goButton.leadingAnchor.constraint(equalTo: mapView.leadingAnchor, constant: 20),
-            goButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -100),
-            goButton.widthAnchor.constraint(equalToConstant: 90),
-            goButton.heightAnchor.constraint(equalToConstant: 90)
-        ])
-        
-        mapView.addSubview(resetButton)
-        NSLayoutConstraint.activate([
-            resetButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -20),
-            resetButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -110),
-            resetButton.widthAnchor.constraint(equalToConstant: 60),
-            resetButton.heightAnchor.constraint(equalToConstant: 60)
-        ])
-        mapView.addSubview(segmentedControl)
-        NSLayoutConstraint.activate([
-            segmentedControl.topAnchor.constraint(equalTo: mapView.topAnchor, constant: 50),
-            segmentedControl.leadingAnchor.constraint(equalTo: mapView.leadingAnchor),
-            segmentedControl.trailingAnchor.constraint(equalTo: mapView.trailingAnchor),
-            segmentedControl.heightAnchor.constraint(equalToConstant: 45),
-            segmentedControl.bottomAnchor.constraint(equalTo: addAddressButton.topAnchor, constant: -15),
-            segmentedControl.bottomAnchor.constraint(equalTo: locationButton.topAnchor, constant: -15),
-        ])
-    }
-    
-    func setupLayoutScrollView() {
-        configureStackView()
-        setupScrollView()
-    }
-    
-    func configureStackView() {
-        stackViewH.backgroundColor = .clear
-        stackViewH.spacing = 10
-    }
-    
-    func setupScrollView() {
-        mapView.addSubview(scrollView)
-        scrollView.addSubview(stackViewH)
-        
-        NSLayoutConstraint.activate([
-            scrollView.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -20),
-            scrollView.leadingAnchor.constraint(equalTo: mapView.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: mapView.trailingAnchor),
-            scrollView.heightAnchor.constraint(equalToConstant: 60),
-            
-            stackViewH.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            stackViewH.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            stackViewH.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            stackViewH.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
-        ])
     }
 }
