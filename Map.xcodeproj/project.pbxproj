@@ -23,6 +23,7 @@
 		CEAF721C29F0719000EBD587 /* ButtonForScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEAF721B29F0719000EBD587 /* ButtonForScrollView.swift */; };
 		CEC39C0829D60B550043C385 /* Direction.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEC39C0729D60B550043C385 /* Direction.swift */; };
 		CED5999F29F2696100AD981A /* UIStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED5999E29F2696100AD981A /* UIStackView.swift */; };
+		CEEBB3BB2A9F7B25000C3B17 /* MainMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEEBB3BA2A9F7B25000C3B17 /* MainMapView.swift */; };
 		CEF3C89729D4D65E0075D43C /* Placemark.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF3C89629D4D65E0075D43C /* Placemark.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,7 @@
 		CEAF721B29F0719000EBD587 /* ButtonForScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonForScrollView.swift; sourceTree = "<group>"; };
 		CEC39C0729D60B550043C385 /* Direction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Direction.swift; sourceTree = "<group>"; };
 		CED5999E29F2696100AD981A /* UIStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIStackView.swift; sourceTree = "<group>"; };
+		CEEBB3BA2A9F7B25000C3B17 /* MainMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMapView.swift; sourceTree = "<group>"; };
 		CEF3C89629D4D65E0075D43C /* Placemark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Placemark.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -98,8 +100,9 @@
 				CEF3C89A29D4D6B80075D43C /* Buttons */,
 				CE9FA3F029EDD7FE00EC3094 /* ScrollViews */,
 				CE66470129D7538A0017C3E4 /* Labels */,
-				CEDAC11B29D4AC3E00F1A4FB /* Controllers */,
 				CEC39C0A29D60DC00043C385 /* Models */,
+				CEEBB3B92A9F7B03000C3B17 /* View */,
+				CEDAC11B29D4AC3E00F1A4FB /* Controllers */,
 				CEA8743729CB3474002A707F /* Info.plist */,
 				CEDAC11E29D4AC8400F1A4FB /* Support */,
 			);
@@ -145,6 +148,14 @@
 				CEA8742929CB3473002A707F /* AppDelegate.swift */,
 			);
 			path = Support;
+			sourceTree = "<group>";
+		};
+		CEEBB3B92A9F7B03000C3B17 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				CEEBB3BA2A9F7B25000C3B17 /* MainMapView.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		CEF3C89A29D4D6B80075D43C /* Buttons */ = {
@@ -235,6 +246,7 @@
 				CEF3C89729D4D65E0075D43C /* Placemark.swift in Sources */,
 				CED5999F29F2696100AD981A /* UIStackView.swift in Sources */,
 				CEA8828629D4C6AA0084E5A3 /* MapButtons.swift in Sources */,
+				CEEBB3BB2A9F7B25000C3B17 /* MainMapView.swift in Sources */,
 				CE8578C929E1E4C9007BA951 /* Constant.swift in Sources */,
 				CEA8742C29CB3473002A707F /* SceneDelegate.swift in Sources */,
 				CEAF721C29F0719000EBD587 /* ButtonForScrollView.swift in Sources */,
